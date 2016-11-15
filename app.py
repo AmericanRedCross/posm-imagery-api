@@ -29,9 +29,11 @@ CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', REDIS_URL)
 CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'posm-imagery-api')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', REDIS_URL)
 IMAGERY_PATH = os.environ.get('IMAGERY_PATH', 'imagery')
+MBTILES_TIMEOUT = int(os.environ.get('MBTILES_TIMEOUT', 60 * 60))
 MIN_ZOOM = int(os.environ.get('MIN_ZOOM', 0))
 MAX_ZOOM = int(os.environ.get('MAX_ZOOM', 22))
 SERVER_NAME = os.environ.get('SERVER_NAME', None)
+TASK_TIMEOUT = int(os.environ.get('TASK_TIMEOUT', 60 * 15))
 USE_X_SENDFILE = os.environ.get('USE_X_SENDFILE', False)
 UPLOADED_IMAGERY_DEST = os.environ.get('UPLOADED_IMAGERY_DEST', 'uploads/')
 
@@ -46,17 +48,18 @@ if UPLOADED_IMAGERY_DEST[-1] != '/':
 app = Flask('posm-imagery-api')
 CORS(app)
 app.config['APPLICATION_ROOT'] = APPLICATION_ROOT
-app.config['CELERY_BROKER_URL'] = CELERY_BROKER_URL
-app.config['CELERY_DEFAULT_QUEUE'] = CELERY_DEFAULT_QUEUE
-app.config['CELERY_RESULT_BACKEND'] = CELERY_RESULT_BACKEND
-app.config['CELERY_TRACK_STARTED'] = True
 app.config['SERVER_NAME'] = SERVER_NAME
 app.config['USE_X_SENDFILE'] = USE_X_SENDFILE
 app.config['UPLOADED_IMAGERY_DEST'] = UPLOADED_IMAGERY_DEST
 
 # Initialize Celery
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery.conf.update(app.config)
+celery = Celery(app.name, broker=CELERY_BROKER_URL)
+celery.conf.update({
+    'broker_url': CELERY_BROKER_URL,
+    'result_backend': CELERY_RESULT_BACKEND,
+    'task_default_queue': CELERY_DEFAULT_QUEUE,
+    'task_track_started': True
+})
 
 # Initialize Tus
 tm = tus_manager(app, upload_url='/imagery/upload',
@@ -149,13 +152,12 @@ def place_file(self, id, source_path):
                       })
 
     try:
-        returncode = subprocess.call(gdal_translate, timeout=60*5)
+        returncode = subprocess.call(gdal_translate, timeout=TASK_TIMEOUT)
     except subprocess.TimeoutExpired as e:
         raise Exception(json.dumps({
             'name': 'preprocess',
             'started_at': started_at.isoformat(),
             'command': ' '.join(gdal_translate),
-            'return_code': returncode,
             'status': 'Timed out'
         }))
 
@@ -313,7 +315,6 @@ def create_overviews(self, id):
         '--config', 'BLOCKXSIZE_OVERVIEW', '512',
         '--config', 'BLOCKYSIZE_OVERVIEW', '512',
         '--config', 'NUM_THREADS_OVERVIEW', 'ALL_CPUS',
-        '-ro',
         raster_path,
     ]
 
@@ -335,13 +336,12 @@ def create_overviews(self, id):
                       })
 
     try:
-        returncode = subprocess.call(gdaladdo, timeout=60*5)
+        returncode = subprocess.call(gdaladdo, timeout=TASK_TIMEOUT)
     except subprocess.TimeoutExpired as e:
         raise Exception(json.dumps({
             'name': 'overviews',
             'started_at': started_at.isoformat(),
             'command': ' '.join(gdaladdo),
-            'return_code': returncode,
             'status': 'Timed out'
         }))
 
@@ -396,13 +396,12 @@ def create_warped_vrt(self, id):
                       })
 
     try:
-        returncode = subprocess.call(gdalwarp, timeout=60*5)
+        returncode = subprocess.call(gdalwarp, timeout=TASK_TIMEOUT)
     except subprocess.TimeoutExpired as e:
         raise Exception(json.dumps({
             'name': 'warped-vrt',
             'started_at': started_at.isoformat(),
             'command': ' '.join(gdalwarp),
-            'return_code': returncode,
             'status': 'Timed out'
         }))
 
@@ -458,13 +457,12 @@ def generate_mbtiles(self, id):
     print('Running {}'.format(' '.join(generate_cmd)))
 
     try:
-        returncode = subprocess.call(generate_cmd, timeout=60*60)
+        returncode = subprocess.call(generate_cmd, timeout=MBTILES_TIMEOUT)
     except subprocess.TimeoutExpired as e:
         raise Exception(json.dumps({
             'name': 'mbtiles',
             'started_at': started_at.isoformat(),
             'command': ' '.join(generate_cmd),
-            'return_code': returncode,
             'status': 'Timed out'
         }))
 

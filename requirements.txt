@@ -1,11 +1,9 @@
-billiard
 cachetools
-celery==4.0.0rc5
+celery>=4.0,<5.0
 flask
 flask-cors
 Flask-Script
 Flask-Uploads
-kombu==4.0.0rc5
 mercantile
 numpy
 Pillow

@@ -130,3 +130,6 @@ list_routes`.
 * `USE_X_SENDFILE` - Whether Flask should use `X-Sendfile` to defer file serving to a proxying web
   server (this requires that the web server and API server are running on the same "server", so
   Docker won't work). Defaults to `False`.
+* `MBTILES_TIMEOUT` - How long to wait before timing out MBTiles archive creation tasks. Defaults to
+  3600s (1 hour).
+* `TASK_TIMEOUT` - How long to wait before timing out tasks. Defaults to 900s (15 minutes).
