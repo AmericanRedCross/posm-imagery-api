@@ -1,3 +1,7 @@
+[![Docker Repository on
+Quay](https://quay.io/repository/mojodna/posm-imagery-api/status "Docker
+Repository on Quay")](https://quay.io/repository/mojodna/posm-imagery-api)
+
 # POSM Imagery API
 
 This is the POSM Imagery API. It does a few things:

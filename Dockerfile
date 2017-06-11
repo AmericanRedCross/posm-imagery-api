@@ -1,6 +1,8 @@
 FROM ubuntu:16.04
 MAINTAINER Seth Fitzsimmons <seth@mojodna.net>
 
+ARG http_proxy
+
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
@@ -41,6 +43,8 @@ RUN npm install && \
   rm -rf /root/.npm
 
 COPY . /app
+
+RUN mkdir -p /app/{imagery,uploads} && chown nobody:nogroup /app/{imagery,uploads}
 
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/node_modules/.bin
 # override this accordingly; should be 2-4x $(nproc)
