@@ -1,7 +1,10 @@
 version: '2'
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        - http_proxy=${http_proxy}
     environment:
       - REDIS_URL=redis://redis/
     ports:
@@ -12,7 +15,10 @@ services:
     depends_on:
       - redis
   worker:
-    build: .
+    build:
+      context: .
+      args:
+        - http_proxy=${http_proxy}
     entrypoint: celery
     command: worker -A app.celery --loglevel=info
     environment:

@@ -1,6 +1,8 @@
 FROM ubuntu:16.04
 MAINTAINER Seth Fitzsimmons <seth@mojodna.net>
 
+ARG http_proxy
+
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
