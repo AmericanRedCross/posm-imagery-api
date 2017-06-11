@@ -1,6 +1,6 @@
 cachetools
 celery>=4.0,<5.0
-flask
+flask>=0.12
 flask-cors
 Flask-Script
 Flask-Uploads
