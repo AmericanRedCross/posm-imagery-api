@@ -42,6 +42,8 @@ RUN npm install && \
 
 COPY . /app
 
+RUN chown nobody:nogroup /app/{imagery,uploads}
+
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/node_modules/.bin
 # override this accordingly; should be 2-4x $(nproc)
 ENV WEB_CONCURRENCY 4
