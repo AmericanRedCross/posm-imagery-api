@@ -11,3 +11,6 @@ rasterio==0.36.0
 redis==2.10.5
 simplejson==3.10.0
 subprocess32==3.2.7
+
+# indirect dependencies
+kombu==4.0.2

@@ -34,9 +34,9 @@ COPY requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
-RUN pip install -U numpy && \
+RUN pip install -U "numpy==1.13.0" && \
   pip install -Ur requirements.txt && \
-  pip install -U gevent gunicorn && \
+  pip install -U "gevent==1.2.2" "gunicorn==19.7.1" && \
   rm -rf /root/.cache
 
 RUN npm install && \
