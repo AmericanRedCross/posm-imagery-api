@@ -662,12 +662,18 @@ def upload_imagery():
 
 @app.route('/imagery/ingest', methods=['POST', 'PUT'])
 def ingest_source():
-    if request.args.get('url') is None:
+    url = request.args.get('url')
+
+    if url is None:
         return jsonify({
             'message': '"url" parameter is required.'
         }), 400
 
-    id = upload_file_handler(request.args.get('url'), remote=True)
+    # handle protocol-relative URLs
+    if url.startswith("//"):
+        url = "http:" + url
+
+    id = upload_file_handler(url, remote=True)
 
     with app.app_context():
         return jsonify({
